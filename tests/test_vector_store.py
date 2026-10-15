@@ -57,7 +57,8 @@ def test_search_can_be_limited_to_one_document(store: VectorStore, embedder: Emb
 
 
 def test_reingesting_same_document_does_not_duplicate(
-    store: VectorStore, embedder: Embedder) -> None:
+    store: VectorStore, embedder: Embedder
+) -> None:
     _ingest(store, embedder)
     _ingest(store, embedder)
     hits = store.search(embedder.embed_query("anything"), top_k=10)

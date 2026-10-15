@@ -3,16 +3,17 @@ from dataclasses import dataclass
 from functools import lru_cache
 
 from qdrant_client import QdrantClient
-from qdrant_client.models import(
+from qdrant_client.models import (
     Distance,
     FieldCondition,
-    Filter, 
+    Filter,
     MatchValue,
-    PointStruct, 
+    PointStruct,
     VectorParams,
 )
 
 from app.core.config import get_settings
+
 
 @dataclass(frozen=True)
 class SearchHit:
@@ -22,6 +23,7 @@ class SearchHit:
     filename: str
     chunk_index: int
 
+
 class VectorStore:
     def __init__(self, client: QdrantClient, collection: str, dimension: int) -> None:
         self._client = client
@@ -29,6 +31,7 @@ class VectorStore:
         self._dimension = dimension
 
     def ensure_collection(self) -> None:
+        """Create the collection if it does not exist yet (safe to call often)."""
         if not self._client.collection_exists(self._collection):
             self._client.create_collection(
                 collection_name=self._collection,
@@ -44,6 +47,7 @@ class VectorStore:
         chunks: list[str],
         vectors: list[list[float]],
     ) -> int:
+        """Store chunks with their vectors. Returns how many were stored."""
         if len(chunks) != len(vectors):
             raise ValueError("chunks and vectors must have the same length")
         if not chunks:
@@ -51,6 +55,8 @@ class VectorStore:
 
         points = [
             PointStruct(
+                # Deterministic ID: re-ingesting the same document overwrites
+                # its chunks instead of creating duplicates.
                 id=str(uuid.uuid5(uuid.NAMESPACE_URL, f"{document_id}:{index}")),
                 vector=vector,
                 payload={

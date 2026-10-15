@@ -17,8 +17,9 @@ def test_fixed_chunks_respect_size_and_overlap() -> None:
     chunks = FixedSizeChunker(chunk_size=100, overlap=20).chunk(text)
     assert all(len(c) <= 100 for c in chunks)
     assert len(chunks) == 3
-    assert chunks[0][:80] + chunks[1][:80] == text[:160]
-    
+    assert "".join(c[:80] for c in chunks[:-1]) + chunks[-1] == text[: 80 * 2] + chunks[-1]
+
+
 def test_fixed_rejects_bad_overlap() -> None:
     with pytest.raises(ValueError):
         FixedSizeChunker(chunk_size=50, overlap=50)

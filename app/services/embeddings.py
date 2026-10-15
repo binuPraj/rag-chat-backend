@@ -5,26 +5,35 @@ from app.core.config import get_settings
 
 
 class Embedder(Protocol):
+    """Turns text into fixed-length vectors."""
 
     @property
-    def dimension(self) -> int: ...
+    def dimension(self) -> int:
+        """Length of every vector this embedder returns."""
+        ...
 
-    def embed_documents(self, texts: list[str]) -> list[list[float]]: ...
+    def embed_documents(self, texts: list[str]) -> list[list[float]]:
+        """Embed many chunks at once (used during ingestion)."""
+        ...
 
-    def embed_query(self, text:str) -> list[float]: ...
+    def embed_query(self, text: str) -> list[float]:
+        """Embed one user question (used during retrieval)."""
+        ...
 
-class SentenceTrandsformerEmbedder:
 
-    def __init__(self, model_name:str) -> None:
+class SentenceTransformerEmbedder:
+    """Local embeddings via sentence-transformers (no API key, no cost)."""
 
+    def __init__(self, model_name: str) -> None:
+        # Imported here so merely importing this module (e.g. in tests or at
+        # app startup) does not pay the cost of loading PyTorch.
         from sentence_transformers import SentenceTransformer
 
         self._model = SentenceTransformer(model_name)
-        dim=self.model.get_sentence_embedding_dimension()
-
+        dim = self._model.get_sentence_embedding_dimension()
         if dim is None:
-            raise RuntimeError(f"Failed to get embedding dimension for model {model_name}")
-        self._dimension: int=dim
+            raise RuntimeError(f"Could not determine embedding size for {model_name}")
+        self._dimension: int = dim
 
     @property
     def dimension(self) -> int:
@@ -33,8 +42,7 @@ class SentenceTrandsformerEmbedder:
     def embed_documents(self, texts: list[str]) -> list[list[float]]:
         if not texts:
             return []
-
-        vectors: list[list[float]] =self._model.encode(
+        vectors: list[list[float]] = self._model.encode(
             texts,
             batch_size=32,
             normalize_embeddings=True,
@@ -42,12 +50,10 @@ class SentenceTrandsformerEmbedder:
         ).tolist()
         return vectors
 
-    def embed_query(self, text:str) -> list[float]:
+    def embed_query(self, text: str) -> list[float]:
         return self.embed_documents([text])[0]
+
 
 @lru_cache
 def get_embedder() -> Embedder:
-    return SentenceTrandsformerEmbedder(get_settings().embedding_model)
-
-
-
+    return SentenceTransformerEmbedder(get_settings().embedding_model)
