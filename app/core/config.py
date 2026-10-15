@@ -6,7 +6,6 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    """Typed settings. Every value can be overridden via env var or .env."""
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
@@ -19,8 +18,8 @@ class Settings(BaseSettings):
 
     redis_url: str = "redis://localhost:6379/0"
     chat_ttl_seconds: int = 3600
-    max_history_messages: int = 20  # kept per session in Redis
-    prompt_history_messages: int = 6  # sent to the LLM with each turn
+    max_history_messages: int = 20  
+    prompt_history_messages: int = 6  
     retrieval_top_k: int = 4
 
     database_url: str = "sqlite:///./app.db"

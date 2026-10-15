@@ -1,0 +1,5 @@
+   Northwind Analytics builds data tools for small businesses. The company is based in Pokhara, Nepal.
+   The Starter plan costs $20 per month and includes 5 users and email support.
+   The Pro plan costs $60 per month and includes 25 users, priority support and API access.
+   Support is available on weekdays from 9 AM to 5 PM Nepal time.
+   New customers get a 14 day free trial. No credit card is required to start the trial.
